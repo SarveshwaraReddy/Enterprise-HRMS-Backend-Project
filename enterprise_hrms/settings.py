@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from datetime import timedelta
 
@@ -30,8 +31,8 @@ INSTALLED_APPS = [
     "enterprise_hrms.notifications",
     "enterprise_hrms.dashboard",
     "enterprise_hrms.api",
-    'django_extensions',
-    "enterprise_hrms"
+    "django_extensions",
+    "enterprise_hrms",
 ]
 
 MIDDLEWARE = [
@@ -64,24 +65,22 @@ TEMPLATES = [
 WSGI_APPLICATION = "enterprise_hrms.wsgi.application"
 ASGI_APPLICATION = "enterprise_hrms.asgi.application"
 
-import sys
-
-if 'test' in sys.argv:
+if "test" in sys.argv:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'test_db.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
         }
     }
 else:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'hrms_portal',     # your database name
-            'USER': 'sarveshwarareddy',       # the PostgreSQL user you created
-            'PASSWORD': 'Sarva@127536',  # the password you set
-            'HOST': 'localhost',       # or your DB server IP
-            'PORT': '5432',            # default PostgreSQL port
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "hrms_portal",
+            "USER": "sarveshwarareddy",
+            "PASSWORD": "Sarva@127536",
+            "HOST": "localhost",
+            "PORT": "5432",
         }
     }
 
@@ -107,6 +106,8 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "accounts.User"
@@ -115,9 +116,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "EXCEPTION_HANDLER": "enterprise_hrms.api.exceptions.custom_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "enterprise_hrms.api.pagination.CustomPagination",
     "PAGE_SIZE": 10,

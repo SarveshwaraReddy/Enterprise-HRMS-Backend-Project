@@ -12,7 +12,7 @@ from enterprise_hrms.accounts.models import User
 from enterprise_hrms.employees.models import Employee
 from enterprise_hrms.departments.models import Department
 from enterprise_hrms.attendance.models import Attendance
-from enterprise_hrms.leave_management.models import LeaveRequest
+from enterprise_hrms.leave_management.models import LeaveType, LeaveBalance, LeaveRequest
 from enterprise_hrms.payroll.models import Payroll
 from enterprise_hrms.audit_logs.models import AuditLog
 
@@ -20,6 +20,8 @@ def seed():
     print("Clearing old records...")
     Payroll.objects.all().delete()
     LeaveRequest.objects.all().delete()
+    LeaveBalance.objects.all().delete()
+    LeaveType.objects.all().delete()
     Attendance.objects.all().delete()
     Employee.objects.all().delete()
     Department.objects.all().delete()
@@ -161,20 +163,57 @@ def seed():
             status="present"
         )
 
+    print("Generating leave types & balances...")
+    leave_type_defs = [
+        {"name": "Casual Leave", "code": "CL", "quota": 12, "paid": True},
+        {"name": "Sick Leave", "code": "SL", "quota": 10, "paid": True},
+        {"name": "Earned Leave", "code": "EL", "quota": 15, "paid": True},
+        {"name": "Work From Home", "code": "WFH", "quota": 24, "paid": True},
+        {"name": "Maternity Leave", "code": "ML", "quota": 180, "paid": True},
+        {"name": "Paternity Leave", "code": "PL", "quota": 15, "paid": True},
+        {"name": "Compensatory Off", "code": "COMP", "quota": 5, "paid": True},
+        {"name": "Unpaid Leave", "code": "UNPAID", "quota": 30, "paid": False},
+    ]
+
+    lt_objs = []
+    for lt_data in leave_type_defs:
+        lt = LeaveType.objects.create(
+            name=lt_data["name"],
+            code=lt_data["code"],
+            annual_quota=lt_data["quota"],
+            is_paid=lt_data["paid"]
+        )
+        lt_objs.append(lt)
+
+    # Initialize leave balance for all employees for current year
+    current_yr = 2026
+    for emp in employees:
+        for lt in lt_objs:
+            LeaveBalance.objects.create(
+                employee=emp,
+                leave_type=lt,
+                allocated_days=lt.annual_quota,
+                used_days=0,
+                remaining_days=lt.annual_quota,
+                year=current_yr
+            )
+
     print("Generating leave requests...")
-    leave_types = ['sick', 'casual', 'annual', 'unpaid']
     statuses = ['approved', 'rejected', 'pending_manager']
     
     for emp in random.sample(employees, 15):
         start = datetime.date(2026, 7, random.randint(10, 20))
-        end = start + datetime.timedelta(days=random.randint(1, 5))
-        
+        end = start + datetime.timedelta(days=random.randint(1, 3))
+        chosen_lt = random.choice(lt_objs)
+        total_days = (end - start).days + 1
+
         LeaveRequest.objects.create(
             employee=emp,
-            leave_type=random.choice(leave_types),
+            leave_type=chosen_lt,
             reason="Family matter / health checkup",
             start_date=start,
             end_date=end,
+            total_days=total_days,
             status=random.choice(statuses)
         )
 

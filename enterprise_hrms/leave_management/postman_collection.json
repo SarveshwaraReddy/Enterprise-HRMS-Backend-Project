@@ -1,0 +1,1147 @@
+{
+	"info": {
+		"_postman_id": "a9e8b7c6-d5e4-4f3a-8b2c-1d0e9f8a7b6c",
+		"name": "Leave Management API - Enterprise HRMS",
+		"description": "Postman collection covering all operations, endpoints, workflows, calendars, analytics, and report exporters for the Leave Management module in Enterprise HRMS.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "leave_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "leave_type_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "balance_id",
+			"value": "1",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "01. Authentication",
+			"item": [
+				{
+					"name": "Login (Get JWT Token)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.access) {",
+									"    pm.collectionVariables.set('token', jsonData.access);",
+									"    console.log('Access token saved:', jsonData.access);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john.doe@hrms.com\",\n    \"password\": \"Password123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login",
+								""
+							]
+						},
+						"description": "Authenticate user (Employee/Manager/HR/Admin) and automatically save Bearer access token into collection variable `{{token}}`."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02. Leave Types (HR / Admin)",
+			"item": [
+				{
+					"name": "List All Leave Types",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/types/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"types",
+								""
+							]
+						},
+						"description": "Retrieve all configured leave types (Casual Leave, Sick Leave, Annual Leave, etc.). Accessible by authenticated users."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Leave Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Maternity Leave\",\n    \"code\": \"ML\",\n    \"annual_quota\": 90,\n    \"is_paid\": true,\n    \"description\": \"Maternity leave entitlement for eligible female employees.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/types/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"types",
+								""
+							]
+						},
+						"description": "Create a new leave type. Restricted to HR / Admin roles."
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve Leave Type Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/types/{{leave_type_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"types",
+								"{{leave_type_id}}",
+								""
+							]
+						},
+						"description": "Get detailed properties of a specific leave type by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Leave Type",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Maternity Leave Updated\",\n    \"code\": \"ML\",\n    \"annual_quota\": 90,\n    \"is_paid\": true,\n    \"description\": \"Updated maternity leave description and policy details.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/types/{{leave_type_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"types",
+								"{{leave_type_id}}",
+								""
+							]
+						},
+						"description": "Full update of a leave type record. Restricted to HR / Admin."
+					},
+					"response": []
+				},
+				{
+					"name": "Partial Update Leave Type",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"annual_quota\": 95\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/types/{{leave_type_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"types",
+								"{{leave_type_id}}",
+								""
+							]
+						},
+						"description": "Partial update of leave type fields (e.g. changing annual quota). Restricted to HR / Admin."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Leave Type",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/types/{{leave_type_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"types",
+								"{{leave_type_id}}",
+								""
+							]
+						},
+						"description": "Delete a leave type by ID. Restricted to HR / Admin."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03. Leave Balances",
+			"item": [
+				{
+					"name": "List All Leave Balances",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/balances/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"balances",
+								""
+							]
+						},
+						"description": "List leave balances. HR/Admin see all records; Employees see their own balances."
+					},
+					"response": []
+				},
+				{
+					"name": "Filter Leave Balances",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/balances/?employee=1&year=2026&leave_type=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"balances",
+								""
+							],
+							"query": [
+								{
+									"key": "employee",
+									"value": "1"
+								},
+								{
+									"key": "year",
+									"value": "2026"
+								},
+								{
+									"key": "leave_type",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Filter leave balances by employee ID, year, or leave type ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve Leave Balance Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/balances/{{balance_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"balances",
+								"{{balance_id}}",
+								""
+							]
+						},
+						"description": "Get detailed leave balance for a specific balance ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "04. Employee Operations",
+			"item": [
+				{
+					"name": "Apply for Leave",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"leave_type\": \"CL\",\n    \"start_date\": \"2026-08-10\",\n    \"end_date\": \"2026-08-12\",\n    \"reason\": \"Attending a family event in hometown.\",\n    \"is_hr_override\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/apply/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"apply",
+								""
+							]
+						},
+						"description": "Primary endpoint for employees to submit a leave request. `leave_type` accepts code (e.g. 'CL', 'SL') or ID. Validates overlapping leaves and available balance."
+					},
+					"response": []
+				},
+				{
+					"name": "My Leave History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/my-leaves/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"my-leaves",
+								""
+							]
+						},
+						"description": "Fetch all past and current leave requests submitted by the logged-in employee."
+					},
+					"response": []
+				},
+				{
+					"name": "My Leave Balance Summary",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/my-balance/?year=2026",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"my-balance",
+								""
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2026"
+								}
+							]
+						},
+						"description": "Get summary breakdown of allocated, used, and remaining leave days for all leave types for the logged-in employee."
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel Leave Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reason\": \"Plans got rescheduled, leave no longer required.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/{{leave_id}}/cancel/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"{{leave_id}}",
+								"cancel",
+								""
+							]
+						},
+						"description": "Cancel a pending or approved leave request. Restores used leave balance if it was previously approved."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "05. Leave Request Management (CRUD)",
+			"item": [
+				{
+					"name": "List All Leave Requests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/?status=pending_manager&search=John&ordering=-applied_at",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								""
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "pending_manager"
+								},
+								{
+									"key": "search",
+									"value": "John"
+								},
+								{
+									"key": "ordering",
+									"value": "-applied_at"
+								}
+							]
+						},
+						"description": "List leave requests with filtering by status (pending_manager, pending_hr, approved, rejected, cancelled), leave_type, search, and ordering."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Leave Request (Standard Endpoint)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"leave_type\": 1,\n    \"start_date\": \"2026-08-20\",\n    \"end_date\": \"2026-08-22\",\n    \"reason\": \"Personal leave request via standard model endpoint.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								""
+							]
+						},
+						"description": "Standard ViewSet creation endpoint for leave requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve Leave Request Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/{{leave_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"{{leave_id}}",
+								""
+							]
+						},
+						"description": "Get complete information of a leave request by ID, including approval tracking history and manager/HR comments."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Leave Request",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"leave_type\": 1,\n    \"start_date\": \"2026-08-20\",\n    \"end_date\": \"2026-08-23\",\n    \"reason\": \"Updated reason and extended date range.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/{{leave_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"{{leave_id}}",
+								""
+							]
+						},
+						"description": "Update an existing leave request."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Leave Request",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/{{leave_id}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"{{leave_id}}",
+								""
+							]
+						},
+						"description": "Delete a leave request. Owner or HR/Admin permissions required."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "06. Multi-Stage Approval Workflow",
+			"item": [
+				{
+					"name": "List Pending Manager Approvals",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/pending/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"pending",
+								""
+							]
+						},
+						"description": "Lists all leave requests in the manager's department pending Stage 1 review (`pending_manager`). Admin/HR view all pending leaves."
+					},
+					"response": []
+				},
+				{
+					"name": "Manager Approve Leave (Stage 1)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"comments\": \"Approved by Department Manager. Forwarded to HR for final sign-off.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/{{leave_id}}/approve/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"{{leave_id}}",
+								"approve",
+								""
+							]
+						},
+						"description": "Stage 1 approval executed by Department Manager. Transitions status from `pending_manager` to `pending_hr`."
+					},
+					"response": []
+				},
+				{
+					"name": "Reject Leave Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"comments\": \"Request rejected due to high workload during sprint release.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/{{leave_id}}/reject/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"{{leave_id}}",
+								"reject",
+								""
+							]
+						},
+						"description": "Reject a leave request (Manager or HR). Transitions status to `rejected`."
+					},
+					"response": []
+				},
+				{
+					"name": "HR Final Approve Leave (Stage 2)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"comments\": \"Final HR approval granted. Leave balance deducted.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/{{leave_id}}/final-approve/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"{{leave_id}}",
+								"final-approve",
+								""
+							]
+						},
+						"description": "Stage 2 final approval executed by HR / Admin. Transitions status from `pending_hr` to `approved` and deducts used days from leave balance."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "07. Leave Calendar APIs",
+			"item": [
+				{
+					"name": "Monthly Leave Calendar",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/calendar/monthly/?month=8&year=2026",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"calendar",
+								"monthly",
+								""
+							],
+							"query": [
+								{
+									"key": "month",
+									"value": "8"
+								},
+								{
+									"key": "year",
+									"value": "2026"
+								}
+							]
+						},
+						"description": "Returns all approved and pending leave requests for a given month and year."
+					},
+					"response": []
+				},
+				{
+					"name": "Team Leave Calendar",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/calendar/team/?department_id=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"calendar",
+								"team",
+								""
+							],
+							"query": [
+								{
+									"key": "department_id",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Returns upcoming/active leaves for all team members in the specified department (or user's department by default)."
+					},
+					"response": []
+				},
+				{
+					"name": "Upcoming Leaves",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/calendar/upcoming/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"calendar",
+								"upcoming",
+								""
+							]
+						},
+						"description": "Returns leaves starting today or in the future."
+					},
+					"response": []
+				},
+				{
+					"name": "Currently On Leave Today",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/calendar/currently-on-leave/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"calendar",
+								"currently-on-leave",
+								""
+							]
+						},
+						"description": "Lists all employees actively on approved leave today."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "08. Leave Analytics & Exporters (HR / Admin)",
+			"item": [
+				{
+					"name": "Leave Analytics Summary",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/analytics/?year=2026",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"analytics",
+								""
+							],
+							"query": [
+								{
+									"key": "year",
+									"value": "2026"
+								}
+							]
+						},
+						"description": "Provides workforce leave analytics: most used leave types, monthly trends, average leave days per employee, and list of employees with zero leave balance. Restricted to Admin/HR."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Leave Report (PDF History)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/report/?report_format=pdf&report_type=history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"report",
+								""
+							],
+							"query": [
+								{
+									"key": "report_format",
+									"value": "pdf"
+								},
+								{
+									"key": "report_type",
+									"value": "history"
+								}
+							]
+						},
+						"description": "Export leave history report as downloadable PDF document. Restricted to Admin/HR."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Leave Report (Excel Annual Register)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/report/?report_format=excel&report_type=annual_register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"report",
+								""
+							],
+							"query": [
+								{
+									"key": "report_format",
+									"value": "excel"
+								},
+								{
+									"key": "report_type",
+									"value": "annual_register"
+								}
+							]
+						},
+						"description": "Export annual leave register as Excel (.xlsx) file. Restricted to Admin/HR."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Leave Report (Excel Department Summary)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/report/?report_format=excel&report_type=dept_summary",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"report",
+								""
+							],
+							"query": [
+								{
+									"key": "report_format",
+									"value": "excel"
+								},
+								{
+									"key": "report_type",
+									"value": "dept_summary"
+								}
+							]
+						},
+						"description": "Export department leave summary as Excel (.xlsx) spreadsheet. Restricted to Admin/HR."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Leave Report (CSV Transactions)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/leaves/report/?report_format=csv&report_type=transactions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"leaves",
+								"report",
+								""
+							],
+							"query": [
+								{
+									"key": "report_format",
+									"value": "csv"
+								},
+								{
+									"key": "report_type",
+									"value": "transactions"
+								}
+							]
+						},
+						"description": "Export detailed leave transaction logs as CSV file. Restricted to Admin/HR."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

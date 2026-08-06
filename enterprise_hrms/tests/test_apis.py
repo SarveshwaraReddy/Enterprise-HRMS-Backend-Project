@@ -82,30 +82,34 @@ class ApiTests(APITestCase):
         self.assertIsNotNone(response.data['data']['check_out'])
 
     def test_leave_workflow(self):
+        from enterprise_hrms.leave_management.models import LeaveType, LeaveBalance
+        sick_lt = LeaveType.objects.create(name="Sick Leave", code="sick", annual_quota=10, is_paid=True)
+        LeaveBalance.objects.create(employee=self.employee_other, leave_type=sick_lt, allocated_days=10, used_days=0, remaining_days=10, year=2026)
+
         # Apply leave
         self.client.force_authenticate(user=self.emp_user_other)
         leave_data = {
             "leave_type": "sick",
             "reason": "Cold",
-            "start_date": "2026-08-01",
+            "start_date": "2026-08-03",
             "end_date": "2026-08-05"
         }
-        response = self.client.post('/api/v1/leaves/', leave_data, format='json')
+        response = self.client.post('/api/v1/leaves/apply/', leave_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        leave_id = response.data['id']
-        self.assertEqual(response.data['status'], 'pending_manager')
+        leave_id = response.data['data']['id']
+        self.assertEqual(response.data['data']['status'], 'pending_manager')
         
         # Manager approval (HR recruiter is manager of Bob's department)
         self.client.force_authenticate(user=self.emp_user)
         approve_data = {"status": "approve", "comments": "Approved by manager"}
-        response = self.client.post(f'/api/v1/leaves/{leave_id}/manager-approve/', approve_data, format='json')
+        response = self.client.put(f'/api/v1/leaves/{leave_id}/approve/', approve_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['data']['status'], 'pending_hr')
         
         # HR approval
         self.client.force_authenticate(user=self.hr)
         hr_data = {"status": "approve", "comments": "Final HR approval"}
-        response = self.client.post(f'/api/v1/leaves/{leave_id}/hr-approve/', hr_data, format='json')
+        response = self.client.put(f'/api/v1/leaves/{leave_id}/final-approve/', hr_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['data']['status'], 'approved')
 
