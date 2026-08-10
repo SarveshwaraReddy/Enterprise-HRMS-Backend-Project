@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "enterprise_hrms.notifications",
     "enterprise_hrms.dashboard",
     "enterprise_hrms.api",
+    "enterprise_hrms.asset_management",
     "django_extensions",
     "enterprise_hrms",
 ]

@@ -906,3 +906,53 @@ coverage report --include="enterprise_hrms/payroll/*" --omit="*/migrations/*"
 | `test_api.py` | 28 | All REST endpoints + edge cases |
 | `test_permissions.py` | 16 | Role enforcement for all operations |
 | **Total** | **91** | **98% code coverage** |
+
+---
+
+## 💻 Asset Management Module
+
+The **Asset Management** module tracks physical hardware, software licenses, maintenance schedules, and IT support ticketing.
+
+### Key Operations & Capabilities
+
+**1. Asset Inventory Management (Admins & IT Staff)**
+- Manage asset categories (Laptops, Monitors, Phones, etc.).
+- Maintain a complete inventory of physical assets with unique codes, vendor details, purchase dates, and warranty tracking.
+- *Endpoints:* `GET /api/v1/assets/`, `POST /api/v1/assets/`, `GET /api/v1/assets/categories/`
+
+**2. Asset Assignment (Admins & IT Staff)**
+- Assign assets to specific employees (tracks assigned date and expected return).
+- Process returned assets, automatically marking them as "Available" again.
+- Employees can view their currently assigned assets.
+- *Endpoints:* `POST /api/v1/assets/assign/`, `PUT /api/v1/assets/return/`, `GET /api/v1/assets/my-assets/`
+
+**3. Asset Maintenance (Admins & IT Staff)**
+- Schedule preventative maintenance or repairs for assets (changes status to "Under Maintenance").
+- Mark maintenance as completed (returns status to "Available") and track maintenance costs.
+- *Endpoints:* `POST /api/v1/assets/{id}/schedule-maintenance/`, `POST /api/v1/assets/maintenance/{id}/complete/`
+
+**4. Software Licenses (Admins & IT Staff)**
+- Track software licenses, subscription types, and keys.
+- Assign licenses to employees and revoke them when necessary.
+- Monitor upcoming license expirations (next 30 days).
+- *Endpoints:* `GET /api/v1/assets/licenses/`, `PUT /api/v1/assets/licenses/{id}/assign/`, `GET /api/v1/assets/licenses/expiring-soon/`
+
+**5. IT Support Ticketing (All Employees)**
+- Employees can open IT support tickets linked to specific assets and categories.
+- IT Staff and Admins can assign tickets to specific engineers.
+- IT Staff and Admins can resolve and close tickets with resolution notes.
+- *Endpoints:* `POST /api/v1/assets/support/tickets/`, `PUT /api/v1/assets/support/tickets/{id}/assign/`, `PUT /api/v1/assets/support/tickets/{id}/close/`
+
+**6. Reporting & Dashboard**
+- Export inventory, support, and license data to PDF, Excel, and CSV formats.
+- View a high-level dashboard summarizing asset statuses, open tickets, and maintenance requests.
+- *Endpoints:* `GET /api/v1/assets/dashboard/`, `GET /api/v1/assets/reports/assets/?format=pdf`
+
+### 🧪 Running Asset Management Tests
+
+The Asset Management module includes **106 tests** with comprehensive coverage.
+
+```powershell
+# Run all asset management tests
+python manage.py test enterprise_hrms.asset_management --verbosity=2
+```
