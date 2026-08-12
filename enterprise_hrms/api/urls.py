@@ -13,4 +13,5 @@ urlpatterns = [
     path('audit-logs/', include('enterprise_hrms.audit_logs.urls')),
     path('notifications/', include('enterprise_hrms.notifications.urls')),
     path('assets/', include('enterprise_hrms.asset_management.urls')),
+    path('performance/', include('enterprise_hrms.performance.urls')),
 ]
