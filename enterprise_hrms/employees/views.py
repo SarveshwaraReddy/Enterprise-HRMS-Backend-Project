@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from .models import Employee
 from .serializers import EmployeeSerializer
 from enterprise_hrms.api.permissions import IsOwnerOrAdminOrHR, IsAdminOrHR
-from enterprise_hrms.audit_logs.utils import log_action
+from .services import EmployeeService
 
 class EmployeeViewSet(viewsets.ModelViewSet):
     """
@@ -19,11 +19,12 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        queryset = Employee.objects.select_related('department', 'user')
         if user.is_superuser or user.role in ['admin', 'hr']:
-            return Employee.objects.all()
+            return queryset.all()
         # Employees can only access their own profile
         try:
-            return Employee.objects.filter(user=user)
+            return queryset.filter(user=user)
         except Exception:
             return Employee.objects.none()
 
@@ -46,30 +47,10 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
     def perform_create(self, serializer):
-        emp = serializer.save()
-        log_action(
-            user=self.request.user,
-            action="Employee Created",
-            description=f"Registered employee: {emp.first_name} {emp.last_name} ({emp.employee_id})",
-            request=self.request
-        )
+        EmployeeService.create_employee(serializer, self.request)
 
     def perform_update(self, serializer):
-        emp = serializer.save()
-        log_action(
-            user=self.request.user,
-            action="Employee Updated",
-            description=f"Updated employee: {emp.first_name} {emp.last_name} ({emp.employee_id})",
-            request=self.request
-        )
+        EmployeeService.update_employee(serializer, self.request)
 
     def perform_destroy(self, instance):
-        emp_name = f"{instance.first_name} {instance.last_name}"
-        emp_id = instance.employee_id
-        instance.delete()
-        log_action(
-            user=self.request.user,
-            action="Employee Deleted",
-            description=f"Deleted employee: {emp_name} ({emp_id})",
-            request=self.request
-        )
+        EmployeeService.delete_employee(instance, self.request)

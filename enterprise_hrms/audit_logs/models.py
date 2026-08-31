@@ -10,8 +10,15 @@ class AuditLog(models.Model):
         related_name='audit_logs'
     )
     action = models.CharField(max_length=100)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
+    module = models.CharField(max_length=100, blank=True, null=True)
+    model_name = models.CharField(max_length=100, blank=True, null=True)
+    object_id = models.CharField(max_length=100, blank=True, null=True)
+    old_data = models.JSONField(blank=True, null=True)
+    new_data = models.JSONField(blank=True, null=True)
     ip_address = models.CharField(max_length=45, blank=True, null=True)
+    user_agent = models.CharField(max_length=255, blank=True, null=True)
+    request_id = models.CharField(max_length=100, blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
