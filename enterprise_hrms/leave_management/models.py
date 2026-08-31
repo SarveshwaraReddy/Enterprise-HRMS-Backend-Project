@@ -48,6 +48,15 @@ class LeaveRequest(models.Model):
 
     class Meta:
         ordering = ['-applied_at']
+        indexes = [
+            models.Index(fields=['employee', 'status'], name='leave_emp_status_idx'),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(end_date__gte=models.F('start_date')),
+                name='leave_end_date_gte_start_date'
+            )
+        ]
 
     def __str__(self):
         return f"{self.employee} - {self.leave_type} ({self.status})"

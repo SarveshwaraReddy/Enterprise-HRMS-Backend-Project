@@ -8,6 +8,7 @@ from enterprise_hrms.employees.models import Employee
 from enterprise_hrms.api.permissions import IsOwnerOrAdminOrHR, IsAdminOrHR
 from enterprise_hrms.audit_logs.utils import log_action
 from enterprise_hrms.notifications.utils import create_notification
+from .services import LeaveService
 
 class LeaveRequestViewSet(viewsets.ModelViewSet):
     """
@@ -105,31 +106,19 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
         except Employee.DoesNotExist:
             approver = None
             
-        leave_req.manager_comments = comments
-        leave_req.manager_approved_by = approver
-        
-        if decision == 'approve':
-            leave_req.status = 'pending_hr'
-            msg = "Leave request approved by manager, pending HR final approval."
-        else:
-            leave_req.status = 'rejected'
-            msg = "Leave request rejected by manager."
-            
-        leave_req.save()
-        
-        # Log & Notify
-        log_action(
-            user=user,
-            action="Leave Approval",
-            description=f"Manager review completed for Leave ID {leave_req.id}: {msg}",
-            request=request
-        )
-        
-        create_notification(
-            recipient=leave_req.employee.user,
-            title="Leave Request Updated (Manager Review)",
-            message=msg
-        )
+        try:
+            leave_req, msg = LeaveService.process_manager_approval(
+                leave_id=leave_req.id,
+                decision=decision,
+                comments=comments,
+                approver_profile=approver,
+                request_obj=request
+            )
+        except ValueError as e:
+            return Response(
+                {"success": False, "message": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         return Response({
             "success": True,
@@ -167,31 +156,19 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
         except Employee.DoesNotExist:
             approver = None
             
-        leave_req.hr_comments = comments
-        leave_req.hr_approved_by = approver
-        
-        if decision == 'approve':
-            leave_req.status = 'approved'
-            msg = "Leave request fully approved by HR."
-        else:
-            leave_req.status = 'rejected'
-            msg = "Leave request rejected by HR."
-            
-        leave_req.save()
-        
-        # Log & Notify
-        log_action(
-            user=user,
-            action="Leave Approval",
-            description=f"HR final review completed for Leave ID {leave_req.id}: {msg}",
-            request=request
-        )
-        
-        create_notification(
-            recipient=leave_req.employee.user,
-            title="Leave Request Finalized",
-            message=msg
-        )
+        try:
+            leave_req, msg = LeaveService.process_hr_approval(
+                leave_id=leave_req.id,
+                decision=decision,
+                comments=comments,
+                approver_profile=approver,
+                request_obj=request
+            )
+        except ValueError as e:
+            return Response(
+                {"success": False, "message": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         return Response({
             "success": True,
