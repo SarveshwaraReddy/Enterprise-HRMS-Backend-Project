@@ -7,8 +7,7 @@ A secure, scalable, and feature-rich Django REST Framework (DRF) backend API for
 ## Features
 
 1. **User Authentication & Authorization**: Secure signup, JWT authentication, role-based access control (Admin, HR, Employee), and token refresh/blacklisting.
-2. **Employee Profile Management**: Comprehensive employee records
- with uniqueness validations on Email, Phone, and Employee ID, plus role-scoped querysets.
+2. **Employee Profile Management**: Comprehensive employee records with uniqueness validations on Email, Phone, and Employee ID, plus role-scoped querysets.
 3. **Department Management & Analytics**: Organize employees into departments, track department managers, and fetch aggregate statistics including average salary, total salary budgets, gender distribution, and employee status breakdowns (`/api/v1/departments/<id>/statistics/` & `/api/v1/departments/all_statistics/`).
 4. **Attendance Logging**: Clock-in/out tracking with one-record-per-day constraint, automatic check-in/check-out state handling, and monthly summary breakdowns.
 5. **Multi-Stage Leave Requests**: Employee application with automated workflow transitions: Department Manager review followed by HR final approval, complete with date validation and status tracking.
@@ -761,7 +760,7 @@ GET /api/v1/payroll/reports/history/
 
 All exports are available via:
 ```http
-GET /api/v1/payroll/reports/export/ 
+GET /api/v1/payroll/reports/export/
 ```
 
 | Query Parameter | Type | Required | Description |
@@ -956,3 +955,4 @@ The Asset Management module includes **106 tests** with comprehensive coverage.
 # Run all asset management tests
 python manage.py test enterprise_hrms.asset_management --verbosity=2
 ```
+
