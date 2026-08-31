@@ -9,7 +9,7 @@ class DepartmentMinimalSerializer(serializers.ModelSerializer):
 
 class EmployeeSerializer(serializers.ModelSerializer):
     department_details = DepartmentMinimalSerializer(source='department', read_only=True)
-
+    
     class Meta:
         model = Employee
         fields = [

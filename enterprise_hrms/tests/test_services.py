@@ -21,26 +21,29 @@ class ServiceTests(TestCase):
         )
 
     def test_unpaid_leave_days_calculation(self):
+        from enterprise_hrms.leave_management.models import LeaveType
+        unpaid_lt = LeaveType.objects.create(name='Unpaid Leave', code='unpaid', annual_quota=30, is_paid=False)
+
         # 1. No unpaid leaves
         days = calculate_unpaid_leave_days(self.employee, 6, 2026)
         self.assertEqual(days, 0)
         
         # 2. Approved unpaid leave entirely in June (June 5 to June 10 = 6 days)
         LeaveRequest.objects.create(
-            employee=self.employee, leave_type='unpaid', status='approved',
-            reason="Sick", start_date=datetime.date(2026, 6, 5), end_date=datetime.date(2026, 6, 10)
+            employee=self.employee, leave_type=unpaid_lt, status='approved',
+            reason="Sick", start_date=datetime.date(2026, 6, 5), end_date=datetime.date(2026, 6, 10), total_days=6
         )
         
         # 3. Approved unpaid leave overlapping June (May 28 to June 3 -> June 1 to June 3 = 3 days)
         LeaveRequest.objects.create(
-            employee=self.employee, leave_type='unpaid', status='approved',
-            reason="Trip", start_date=datetime.date(2026, 5, 28), end_date=datetime.date(2026, 6, 3)
+            employee=self.employee, leave_type=unpaid_lt, status='approved',
+            reason="Trip", start_date=datetime.date(2026, 5, 28), end_date=datetime.date(2026, 6, 3), total_days=7
         )
         
         # 4. Rejected unpaid leave (should be ignored)
         LeaveRequest.objects.create(
-            employee=self.employee, leave_type='unpaid', status='rejected',
-            reason="Trip", start_date=datetime.date(2026, 6, 15), end_date=datetime.date(2026, 6, 18)
+            employee=self.employee, leave_type=unpaid_lt, status='rejected',
+            reason="Trip", start_date=datetime.date(2026, 6, 15), end_date=datetime.date(2026, 6, 18), total_days=4
         )
 
         total_days = calculate_unpaid_leave_days(self.employee, 6, 2026)
