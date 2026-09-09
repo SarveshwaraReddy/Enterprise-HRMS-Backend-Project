@@ -9,6 +9,8 @@ from .models import Attendance
 from .serializers import AttendanceSerializer
 from enterprise_hrms.employees.models import Employee
 from enterprise_hrms.api.permissions import IsOwnerOrAdminOrHR, IsAdminOrHR
+from enterprise_hrms.api.dtos import AttendanceSummaryDTO
+from dataclasses import asdict
 
 class AttendanceViewSet(viewsets.ModelViewSet):
     """
@@ -133,16 +135,18 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         
         counts = records.values('status').annotate(count=Count('status'))
         breakdown = {choice[0]: 0 for choice in Attendance.STATUS_CHOICES}
-        for item in counts:
-            breakdown[item['status']] = item['count']
-            
-        data = {
-            "employee_id": employee.id,
-            "employee_name": f"{employee.first_name} {employee.last_name}",
-            "month": month,
-            "year": year,
-            "total_days_logged": records.count(),
-            "breakdown": breakdown
-        }
         
-        return Response({"success": True, "data": data})
+        # Using map/filter/lambda/dict comprehension instead of standard loop
+        update_counts = dict(map(lambda item: (item['status'], item['count']), counts))
+        breakdown.update(update_counts)
+            
+        dto = AttendanceSummaryDTO(
+            employee_id=employee.id,
+            employee_name=f"{employee.first_name} {employee.last_name}",
+            month=month,
+            year=year,
+            total_days_logged=records.count(),
+            breakdown=breakdown
+        )
+        
+        return Response({"success": True, "data": asdict(dto)})

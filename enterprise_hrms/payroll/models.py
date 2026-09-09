@@ -42,7 +42,9 @@ class Payroll(models.Model):
     paid_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        unique_together = ('employee', 'month', 'year')
+        constraints = [
+            models.UniqueConstraint(fields=['employee', 'month', 'year'], name='unique_payroll_per_month')
+        ]
         ordering = ['-year', '-month']
 
     def __str__(self):

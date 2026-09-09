@@ -9,6 +9,8 @@ from enterprise_hrms.api.permissions import IsOwnerOrAdminOrHR, IsAdminOrHR
 from enterprise_hrms.audit_logs.utils import log_action
 from enterprise_hrms.notifications.utils import create_notification
 from .services import LeaveService
+from enterprise_hrms.api.dtos import LeaveApprovalDTO
+from enterprise_hrms.api.exceptions import InvalidWorkflowStateError
 
 class LeaveRequestViewSet(viewsets.ModelViewSet):
     """
@@ -107,14 +109,15 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
             approver = None
             
         try:
-            leave_req, msg = LeaveService.process_manager_approval(
+            dto = LeaveApprovalDTO(
                 leave_id=leave_req.id,
                 decision=decision,
                 comments=comments,
                 approver_profile=approver,
                 request_obj=request
             )
-        except ValueError as e:
+            leave_req, msg = LeaveService.process_manager_approval(dto)
+        except InvalidWorkflowStateError as e:
             return Response(
                 {"success": False, "message": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
@@ -157,14 +160,15 @@ class LeaveRequestViewSet(viewsets.ModelViewSet):
             approver = None
             
         try:
-            leave_req, msg = LeaveService.process_hr_approval(
+            dto = LeaveApprovalDTO(
                 leave_id=leave_req.id,
                 decision=decision,
                 comments=comments,
                 approver_profile=approver,
                 request_obj=request
             )
-        except ValueError as e:
+            leave_req, msg = LeaveService.process_hr_approval(dto)
+        except InvalidWorkflowStateError as e:
             return Response(
                 {"success": False, "message": str(e)},
                 status=status.HTTP_400_BAD_REQUEST

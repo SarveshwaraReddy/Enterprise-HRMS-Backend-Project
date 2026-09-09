@@ -17,7 +17,9 @@ class Attendance(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='present')
 
     class Meta:
-        unique_together = ('employee', 'date')
+        constraints = [
+            models.UniqueConstraint(fields=['employee', 'date'], name='unique_attendance_per_day')
+        ]
         ordering = ['-date', 'employee']
 
     def __str__(self):

@@ -10,12 +10,17 @@ def success_response(data=None, message="Success", status_code=200):
         "data": data
     }, status=status_code)
 
-def error_response(errors=None, message="Error", status_code=400):
+def error_response(errors=None, message="Error", status_code=400, error_code=None):
     """
     Standard format for error API responses.
     """
-    return Response({
+    response_data = {
         "success": False,
         "message": message,
         "errors": errors
-    }, status=status_code)
+    }
+    
+    if error_code is not None:
+        response_data["error_code"] = error_code
+        
+    return Response(response_data, status=status_code)
